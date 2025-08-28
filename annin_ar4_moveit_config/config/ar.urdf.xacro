@@ -1,24 +1,29 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="http://wiki.ros.org/xacro" name="$(arg ar_model)">
-  <xacro:include filename="$(find annin_ar4_description)/urdf/ar_macro.xacro"/>
-  <xacro:include filename="$(find annin_ar4_description)/urdf/ar_gripper_macro.xacro"/>
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="ar">
+  <xacro:include filename="$(find sketch_bot_support)/urdf/sketch_bot_macro.xacro"/>
+  <!-- <xacro:include filename="$(find annin_ar4_description)/urdf/ar_gripper_macro.xacro"/> -->
   <xacro:include filename="$(find annin_ar4_description)/urdf/ar.ros2_control.xacro"/>
-  <xacro:include filename="$(find annin_ar4_description)/urdf/ar_gripper.ros2_control.xacro"/>
+  <!-- <xacro:include filename="$(find annin_ar4_description)/urdf/ar_gripper.ros2_control.xacro"/> -->
 
   <xacro:arg name="tf_prefix" default="" />
+  <xacro:arg name="ar_model" default="mk3" />
 
-  <link name="world" />
+
+<!--   <link name="world" />
   <xacro:ar_robot
     tf_prefix="$(arg tf_prefix)"
     parent="world"
     robot_parameters_file="$(find annin_ar4_description)/config/$(arg ar_model).yaml"
   >
     <origin xyz="0 0 0" rpy="0 0 0" />
-  </xacro:ar_robot>
-  <xacro:ar_gripper 
+  </xacro:ar_robot> -->
+  <xacro:sketch_bot prefix="$(arg tf_prefix)"/>
+
+
+<!--   <xacro:ar_gripper 
     tf_prefix="$(arg tf_prefix)"
     parent="$(arg tf_prefix)ee_link" 
-  />
+  /> -->
 
   <xacro:ar_ros2_control
     ar_model="$(arg ar_model)"
@@ -30,11 +35,11 @@
     driver_parameters_file="$(find annin_ar4_driver)/config/driver.yaml"
     tf_prefix="$(arg tf_prefix)"
   />
-  <xacro:ar_gripper_ros2_control
+<!--   <xacro:ar_gripper_ros2_control
     name="ARGripperFakeSystem"
     plugin_name="mock_components/GenericSystem"
     serial_port="/dev/ttyUSB0"
     driver_parameters_file="$(find annin_ar4_driver)/config/gripper_driver.yaml"
     tf_prefix="$(arg tf_prefix)"
-  />
+  /> -->
 </robot>

@@ -13,7 +13,7 @@ from launch.substitutions import (
     PathJoinSubstitution,
     LaunchConfiguration,
 )
-
+from moveit_configs_utils import MoveItConfigsBuilder
 
 def load_yaml(package_name, file_name):
     package_path = get_package_share_directory(package_name)
@@ -39,111 +39,33 @@ def generate_launch_description():
                                           description="Prefix for AR4 tf_tree")
     tf_prefix = LaunchConfiguration("tf_prefix")
 
-    robot_description_content = Command([
-        PathJoinSubstitution([FindExecutable(name="xacro")]),
-        " ",
-        PathJoinSubstitution([
-            FindPackageShare("annin_ar4_moveit_config"),
-            "urdf",
-            "fake_ar.urdf.xacro",
-        ]),
-        " ",
-        "ar_model:=",
-        ar_model_config,
-        " ",
-        "tf_prefix:=",
-        tf_prefix,
-    ])
-    robot_description = {"robot_description": robot_description_content}
-
-    # MoveIt Configuration
-    robot_description_semantic_content = Command([
-        PathJoinSubstitution([FindExecutable(name="xacro")]),
-        " ",
-        PathJoinSubstitution([
-            FindPackageShare("annin_ar4_moveit_config"), "srdf",
-            "ar.srdf.xacro"
-        ]),
-        " ",
-        "name:=",
-        ar_model_config,
-        " ",
-        "tf_prefix:=",
-        tf_prefix,
-    ])
-    robot_description_semantic = {
-        "robot_description_semantic": robot_description_semantic_content
-    }
-
-    robot_description_kinematics = {
-        "robot_description_kinematics":
-        load_yaml(
-            "annin_ar4_moveit_config",
-            os.path.join("config", "kinematics.yaml"),
+    moveit_config = (
+        MoveItConfigsBuilder("ar", package_name="annin_ar4_moveit_config")
+        .robot_description(file_path="config/ar.urdf.xacro")
+        .robot_description_semantic(file_path="config/ar.srdf.xacro")
+        .trajectory_execution(file_path="config/controllers.yaml")
+        .robot_description_kinematics(file_path="config/kinematics.yaml")
+        .planning_scene_monitor(
+            publish_robot_description= True, publish_robot_description_semantic=True, publish_planning_scene=True
         )
-    }
-
-    joint_limits = ParameterFile(
-        PathJoinSubstitution([
-            FindPackageShare("annin_ar4_moveit_config"),
-            "config/joint_limits.yaml"
-        ]),
-        allow_substs=True,
+        .planning_pipelines(
+            pipelines=["ompl", "chomp"]
+        )
+        .to_moveit_configs()
     )
 
-    # Planning Configuration
-    ompl_planning_yaml = load_yaml("annin_ar4_moveit_config",
-                                   "config/ompl_planning.yaml")
-    planning_pipeline_config = {
-        "default_planning_pipeline": "ompl",
-        "planning_pipelines": ["ompl"],
-        "ompl": ompl_planning_yaml,
-    }
+    use_sim_time={"use_sim_time": True}
+    config_dict = moveit_config.to_dict()
+    config_dict.update(use_sim_time)
 
-    moveit_controller_manager = {
-        "moveit_controller_manager":
-        "moveit_simple_controller_manager/MoveItSimpleControllerManager",
-    }
-
-    moveit_controllers = ParameterFile(
-        PathJoinSubstitution([
-            FindPackageShare("annin_ar4_moveit_config"),
-            "config/controllers.yaml"
-        ]),
-        allow_substs=True,
-    )
-
-    trajectory_execution = {
-        "moveit_manage_controllers": False,
-        "trajectory_execution.allowed_execution_duration_scaling": 1.2,
-        "trajectory_execution.allowed_goal_duration_margin": 0.5,
-        "trajectory_execution.allowed_start_tolerance": 0.01,
-    }
-
-    planning_scene_monitor_parameters = {
-        "publish_planning_scene": True,
-        "publish_geometry_updates": True,
-        "publish_state_updates": True,
-        "publish_transforms_updates": True,
-    }
-
-    # Start the actual move_group node/action server
     run_move_group_node = Node(
         package="moveit_ros_move_group",
         executable="move_group",
         output="screen",
-        parameters=[
-            robot_description,
-            robot_description_semantic,
-            robot_description_kinematics,
-            joint_limits,
-            planning_pipeline_config,
-            trajectory_execution,
-            moveit_controller_manager,
-            moveit_controllers,
-            planning_scene_monitor_parameters,
-        ],
+        parameters=[config_dict],
+        arguments=["--ros-args", "--log-level", "info"],
     )
+
 
     # RViz
     rviz_base = os.path.join(
@@ -156,20 +78,16 @@ def generate_launch_description():
         name="rviz2",
         output="log",
         arguments=["-d", rviz_full_config],
-        parameters=[
-            robot_description,
-            robot_description_semantic,
-            robot_description_kinematics,
-            planning_pipeline_config,
-        ],
+        parameters=[config_dict],
     )
+
     # Publish TF
     robot_state_publisher = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
         name="robot_state_publisher",
         output="both",
-        parameters=[robot_description],
+        parameters=[moveit_config.robot_description],
     )
 
     # ros2_control using FakeSystem as hardware
@@ -181,7 +99,7 @@ def generate_launch_description():
         package="controller_manager",
         executable="ros2_control_node",
         parameters=[
-            robot_description,
+            moveit_config.robot_description,
             ros2_controllers,
             {
                 "tf_prefix": tf_prefix
@@ -211,15 +129,15 @@ def generate_launch_description():
         ],
     )
 
-    gripper_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=[
-            "gripper_controller",
-            "-c",
-            "/controller_manager",
-        ],
-    )
+    # gripper_controller_spawner = Node(
+    #     package="controller_manager",
+    #     executable="spawner",
+    #     arguments=[
+    #         "gripper_controller",
+    #         "-c",
+    #         "/controller_manager",
+    #     ],
+    # )
 
     return LaunchDescription([
         db_arg,
@@ -231,5 +149,5 @@ def generate_launch_description():
         ros2_control_node,
         joint_state_broadcaster_spawner,
         joint_controller_spawner,
-        gripper_controller_spawner,
+        # gripper_controller_spawner,
     ])

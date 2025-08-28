@@ -93,7 +93,7 @@
         <param name="position_offset">${joint_offset_parameters['joint_4']}</param>
       </joint>
 
-      <joint name="${tf_prefix}joint_5">
+<!--       <joint name="${tf_prefix}joint_5">
         <command_interface name="position">
           <param name="min">${robot_parameters['j5_limit_min']}</param>
           <param name="max">${robot_parameters['j5_limit_max']}</param>
@@ -121,7 +121,7 @@
           <param name="initial_value">0.0</param>
         </state_interface>
         <param name="position_offset">${joint_offset_parameters['joint_6']}</param>
-      </joint>
+      </joint> -->
 
     </ros2_control>
   </xacro:macro>
