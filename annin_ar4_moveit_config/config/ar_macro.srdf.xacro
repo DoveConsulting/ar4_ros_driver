@@ -5,15 +5,22 @@
 -->
 <robot xmlns:xacro="http://wiki.ros.org/xacro">
   <xacro:macro name="ar_srdf" params="tf_prefix">
-    <group name="ar_manipulator">
+<!--     <group name="ar_manipulator">
       <joint name="${tf_prefix}joint_1" />
       <joint name="${tf_prefix}joint_2" />
       <joint name="${tf_prefix}joint_3" />
       <joint name="${tf_prefix}joint_4" />
-<!--       <joint name="${tf_prefix}joint_5" />
+      <joint name="${tf_prefix}joint_5" />
       <joint name="${tf_prefix}joint_6" />
-      <joint name="${tf_prefix}ee_joint"/> -->
+      <joint name="${tf_prefix}ee_joint"/>
+    </group> -->
+
+
+    <group name="ar_manipulator">
+        <chain base_link="base_link" tip_link="link_4"/>
     </group>
+
+    
     <group_state name="home" group="ar_manipulator">
       <joint name="${tf_prefix}joint_1" value="0" />
       <joint name="${tf_prefix}joint_2" value="0" />
