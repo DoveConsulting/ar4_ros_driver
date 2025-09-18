@@ -70,18 +70,6 @@ def generate_launch_description():
         ],
     )
 
-    gripper_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=[
-            "gripper_controller",
-            "-c",
-            "/controller_manager",
-            "--controller-manager-timeout",
-            "120",
-        ],
-        condition=IfCondition(include_gripper),
-    )
 
     robot_state_publisher_node = Node(
         package="robot_state_publisher",
@@ -142,7 +130,7 @@ def generate_launch_description():
                               description="Model of AR4"))
     ld.add_action(controller_manager_node)
     ld.add_action(spawn_joint_controller)
-    ld.add_action(gripper_controller_spawner)
+ 
     ld.add_action(robot_state_publisher_node)
     ld.add_action(joint_state_broadcaster)
     return ld

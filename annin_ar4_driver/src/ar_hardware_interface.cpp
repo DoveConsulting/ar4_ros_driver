@@ -35,8 +35,8 @@ hardware_interface::CallbackReturn ARHardwareInterface::on_init(
     // run calibration
     RCLCPP_INFO(logger_, "Running joint calibration...");
     std::string calib_sequence = info_.hardware_parameters.at("calib_sequence");
-    if (calib_sequence.length() != 7) {
-      RCLCPP_ERROR(logger_, "Invalid calib_sequence length: %zu. Expected: 7",
+    if (calib_sequence.length() != 5) {
+      RCLCPP_ERROR(logger_, "Invalid calib_sequence length: %zu. Expected: 5",
                    calib_sequence.length());
       return hardware_interface::CallbackReturn::ERROR;
     }

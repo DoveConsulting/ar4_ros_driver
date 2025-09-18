@@ -62,7 +62,7 @@ const int REST_MOTOR_STEPS_MK3[] = {7555, 2333, 4944, 8960, 2295, 4000};
 enum SM { STATE_TRAJ, STATE_ERR };
 SM STATE = STATE_TRAJ;
 
-const int NUM_JOINTS = 6;
+const int NUM_JOINTS = 4;
 AccelStepper stepperJoints[NUM_JOINTS];
 Bounce2::Button limitSwitches[NUM_JOINTS];
 const int DEBOUNCE_INTERVAL = 10;  // ms

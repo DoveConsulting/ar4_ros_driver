@@ -37,6 +37,7 @@ bool TeensyDriver::init(std::string ar_model, std::string port, int baudrate,
     RCLCPP_INFO(logger_, "Waiting for response from Teensy on port %s",
                 port.c_str());
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    RCLCPP_INFO_STREAM(logger_, "Sending: "<<msg<<" to borad");
     exchange(msg);
   }
   RCLCPP_INFO(logger_, "Successfully initialised driver on port %s",
